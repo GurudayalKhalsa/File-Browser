@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>File Browser</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <link rel="stylesheet" href="css/font-awesome.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>[v-cloak]{display: none}</style>
+  </head>
+  <body>
+    <div id="view" v-cloak>
+      <header v-component="header" v-ref="header">
+        <form v-on="submit: submit">
+          <div class="text">
+            <input type="text" class="path" v-model="path" placeholder="Enter a path">
+          </div>
+        </form>        
+      </header>
+      <div class="center error" v-show="folderLoadError">Error: Please enter a valid directory.</div>
+      <div class="center error" v-show="customError">{{customError}}</div>
+      <ul class="files fade" tabindex="0" v-component="list" v-ref="list" v-with="files: files, shownFiles: shownFiles, selectedFiles: selectedFiles, showHiddenFiles: showHiddenFiles, modifierKey: modifierKey, sortOrder: sortOrder, sortBy: sortBy" v-on="keydown: keydown, contextmenu: contextmenu" v-mousetouch="down: mousedown" v-if="!fetchingNewDir" v-transition>
+        <li v-repeat="files | filterFilesToDisplay" v-component="file" v-ref="shownFiles"></li>
+      </ul>
+      <footer v-component="footer" v-ref="footer" v-with="selectedFiles: selectedFiles, lastExists: lastExists, nextExists: nextExists, shownFiles: shownFiles, sortOrder: sortOrder, sortBy: sortBy">
+        <div class="left">
+          <a v-mousetouch="down: showOptions = !showOptions" class="showOptions"><i class="fa fa-cog"></i></a>
+          <div class="options" v-show="showOptions">
+            <ul>
+              <li v-mousetouch="up: showOptions = false">
+                <a>
+                  <label class="showHiddenFiles">
+                    <input type="checkbox" v-model="showHiddenFiles">
+                    <span>Show Hidden Files</span>
+                  </label>
+                </a>
+              </li>
+              <!-- <li class="ui">
+                  <label><a v-mousetouch="up: showUIConfig = !showUIConfig" class="dropTab" v-class="open: showUIConfig"><i class="fa fa-keyboard-o"></i><span>Configure UI</span></a></label>
+                  <ul v-show="showUIConfig" class="submenu">
+                    <li class="fadeIntoNewFolder">
+                      <label>
+                        <a>
+                        <input type="checkbox" v-model="fadeIntoNewFolder">
+                        <span>Fade into new folder</span>
+                        </a>
+                      </label>
+                    </li>
+                  </ul>
+              </li> -->
+              <li class="sortBy select">
+                  <a v-mousetouch="up: sortOrder = sortOrder === 'ascending' ? 'descending' : 'ascending'"><i class="fa" v-class="fa-sort-alpha-asc: sortOrder === 'ascending', fa-sort-alpha-desc: sortOrder === 'descending'"></i><span>Sort</span></a>
+                  <select v-model="sortBy">
+                    <option value="name" selected="">Name</option>
+                    <option value="size">Size</option>
+                    <option value="type">File Type</option>
+                    <option value="last access time">Access Time</option>
+                    <option value="last change time">Change Time</option>
+                    <option value="last modified time">Modified Time</option>
+
+                  </select>
+              </li>
+              <li class="fileActions">
+                  <label><a v-mousetouch="up: showFileActions = !showFileActions" class="dropTab" v-class="open: showFileActions"><i class="fa fa-wrench"></i><span>File Actions</span></a></label>
+                  <div v-show="showFileActions" v-partial="fileActions" class="fileActions submenu" v-mousetouch="up: showOptions = false"></div>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="middle">
+         <div v-if="!fetchingNewDir">
+           <span>{{shownFiles.length || 0}} {{shownFiles.length | pluralize item items}}, {{selectedFiles.length || 0}} Selected</span>
+         </div>
+        </div>
+        <div class="right">
+          <div class="undoredo">
+            <a v-mousetouch="down: openLast" v-class="disabled: !lastExists" class="back"><i class="fa fa-arrow-circle-left"></i></a>
+            <a v-mousetouch="down: openNext" v-class="disabled: !nextExists" class="forward"><i class="fa fa-arrow-circle-right"></i></a>
+          </div>
+        </div>
+      </footer>
+    </div>
+    
+    
+    
+    
+    <script type="text/x-template" id="file-template">
+      <li tabindex="0" v-on="contextmenu: contextmenu" v-mousetouch="dblclick: dblclick, down: mousedown">
+        <a v-class="selected: selected, droptarget: droptarget">
+          <i class="fa fa-{{iconType}}"></i>
+          <span class="name">{{data.name}}</span>
+        </a>
+      </li>
+    </script>
+    <script type="text/x-template" id="fileActions-template">
+      <ul>
+        <li class="newFolder">
+          <a v-mousetouch="up: doFileAction($event, 'newFolder')" >
+            <i class="fa fa-folder-o"></i>
+            <span>Create New Folder</span>
+          </a>
+        </li>
+        <li class="newFile">
+          <a v-mousetouch="up: doFileAction($event, 'newFile')" >
+            <i class="fa fa-file-o"></i>
+            <span>Create New File</span>
+          </a>
+        </li>
+        <li v-show="selectedFiles.length > 0" class="open">
+          <a disabled="{{selectedFiles.length > 1}}" v-mousetouch="up: doFileAction($event, 'open')" >
+            <i class="fa fa-folder-open-o"></i>
+            <span>Open</span>
+          </a>
+        </li>
+        <li v-show="selectedFiles.length > 0" class="move">
+          <a v-mousetouch="up: doFileAction($event, 'move')" >
+            <i class="fa fa-arrows"></i>
+            <span>Move</span>
+          </a>
+        </li>
+        <li v-show="selectedFiles.length > 0" class="delete">
+          <a v-mousetouch="up: doFileAction($event, 'delete')" >
+            <i class="fa fa-trash-o"></i>
+            <span>Delete</span>
+          </a>
+        </li>
+        <li v-show="selectedFiles.length > 0" class="rename">
+          <a disabled="{{selectedFiles.length > 1}}" v-mousetouch="up: doFileAction($event, 'rename')" >
+            <i class="fa fa-font"></i>
+            <span>Rename</span>
+          </a>
+        </li>
+        <li class="info">
+          <a v-mousetouch="up: doFileAction($event, 'info')" >
+            <i class="fa fa-info"></i>
+            <span>Get Info</span>
+          </a>
+        </li>
+      </ul>
+    </script>    
+    <script type="text/x-template" id="filedrag-template">
+      <div class="filedrag" style="top: {{y}}px; left: {{x}}px;">
+          <span>{{amt}} Items</span>
+      </div>
+    </script>
+    <script type="text/x-template" id="modal-template">
+      <div class="modal" tabindex="0">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form v-on="submit: submit">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+              <h4 class="modal-title">{{title}}</h4>
+            </div>
+            <div class="modal-body" v-partial="body">
+            </div>
+            <div class="modal-footer">
+              <button v-show="disableCancelButton !== true" type="button" class="button button-red" data-dismiss="modal">Cancel</button>
+              <input v-show="disableSubmitButton !== true" type="submit" class="button button-green" value="Submit" />
+            </div>
+            </form>
+          </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+      </div>
+    </script>
+    <script id="move-body-template" type="text/x-template">
+      <p>Enter Path to move {{files.length}} {{files.length | pluralize item items}} to:</p> 
+      <input type="text" v-model="path"></input> 
+      <p>Items to move:</p>  
+      <a v-mousetouch="up: showOptions = !showOptions" class="dropTab" v-class="open: showOptions">Options</a>
+      <ul v-show="showOptions">
+        <li>
+          <a>
+            <label class="copy">
+              <input type="checkbox" v-model="options.copy">
+              <span>Copy instead of move</span>
+            </label>
+          </a>
+        </li>
+      </ul>
+      <a v-mousetouch="up: showFiles = !showFiles" class="dropTab" v-class="open: showFiles">Files</a> 
+      <ul v-show="showFiles"><li v-repeat="files">{{data.path}}</li></ul>
+    </script>
+    <script id="newFolder-body-template" type="text/x-template">
+      <p>Enter name of folder to create:</p> 
+      <input type="text" v-model="path"></input> 
+      <a v-mousetouch="up: showOptions = !showOptions" class="dropTab" v-class="open: showOptions">Options</a>
+      <ul v-show="showOptions">
+        <li>
+          <a>
+            <label class="move">
+              <input type="checkbox" v-model="options.move">
+              <span>Move selected files to new folder</span>
+            </label>
+          </a>
+        </li>
+        <li>
+          <a>
+            <label class="copy">
+              <input type="checkbox" v-model="options.copy">
+              <span>Copy selected files to new folder</span>
+            </label>
+          </a>
+        </li>
+        <li>
+          <a v-mousetouch="up: showFiles = !showFiles" class="dropTab" v-class="open: showFiles">Files</a> 
+          <ul v-show="showFiles"><li v-repeat="files">{{data.path}}</li></ul>
+        </li>
+      </ul>
+      
+    </script>
+    <script id="newFile-body-template" type="text/x-template">
+      <p>Enter name of file to create:</p> 
+      <input type="text" v-model="path"></input> 
+    </script>
+    <script id="rename-body-template" type="text/x-template">
+      <p>Enter new name of file:</p> 
+      <input type="text" v-model="path"></input> 
+    </script>
+    <script id="info-body-template" type="text/x-template">
+      {{{data | parseInfo | formatJSON capitalize}}}
+    </script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
