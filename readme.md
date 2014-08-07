@@ -1,6 +1,7 @@
 #File Browser
 
-A File browser and manager built with Node and VueJS. Only tested on Mac OS X
+A File browser and manager built with Node and VueJS. Medatata extracted with Exiftool.
+Only tested on Mac OS X.
 
 ##Installation
 
