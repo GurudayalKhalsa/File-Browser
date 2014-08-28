@@ -25,7 +25,7 @@
       <footer v-component="footer" v-ref="footer" v-with="selectedFiles: selectedFiles, lastExists: lastExists, nextExists: nextExists, shownFiles: shownFiles, sortOrder: sortOrder, sortBy: sortBy">
         <div class="left">
           <a v-mousetouch="down: showOptions = !showOptions" class="showOptions"><i class="fa fa-cog"></i></a>
-          <div class="options" v-show="showOptions">
+          <div class="options" v-show="showOptions" v-clickoutside="showOptions = false">
             <ul>
               <li v-mousetouch="up: showOptions = false">
                 <a>
