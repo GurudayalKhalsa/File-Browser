@@ -1,5 +1,4 @@
 var directives = {
-  mousetouch: require('./mousetouch'),
-  mousetouch: require('./clickoutside')
+  mousetouch: require('./mousetouch')
 };
 module.exports = directives;

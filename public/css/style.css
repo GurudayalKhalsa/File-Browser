@@ -294,6 +294,7 @@ header input[type="text"]{
   bottom: 35px;
   left: 1px;
   height: auto;
+  outline: none;
 }
 
 #view footer .options ul{
