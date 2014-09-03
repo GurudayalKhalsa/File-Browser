@@ -64,7 +64,7 @@ module.exports = Vue.extend({
         PathStore.set('path', file.data.path + "/");
         this.$dispatch('doAction', 'request');
       } else {
-        location.href = App.config.SERVE_URL+file.data.path;
+        window.open(location.origin + App.config.SERVE_URL+file.data.path, '_blank');
       }
     }
   }

@@ -57,7 +57,7 @@ var config = {
         folder: ['type'],
         image: ['title', 'image size', 'make', 'camera model name', 'shutter speed', 'f number', 'iso', 'flash', 'exposure program', 'white balance', 'create date', 'date time original', 'lens', 'lens id', 'focal length', 'field of view', 'scale factor to 35 mm equivalent', 'profile description', 'icc profile name', 'quality', 'bits per sample', 'bit depth', 'filter', 'interlaced', 'transparency', 'encoding process', 'author', 'creator', 'copyright', 'software', 'creator tool'],
         audio: ['title', 'artist', 'album', 'composer', 'year', 'genre', 'track', 'duration', 'audio bitrate', 'sample rate', 'date time original', 'creator tool', 'encoder',],
-        video: ['title', 'image size', 'duration', 'avg bitrate', 'video frame rate', 'audio channels', 'audio codec id', 'date time original', 'author', 'compressor id', 'major brand', 'video codec id'],
+        video: ['title', 'image size', 'duration', 'avg bitrate', 'video frame rate', 'audio channels', 'audio codec id', 'date time original', 'author', 'compressor id', 'compressor name', 'major brand', 'video codec id'],
         text: [''],
         code: ['title', 'viewport'],
         pdf: ['title', 'author', 'pagecount', 'page count', 'pdf version', 'creator', 'creator tool', 'creator version', 'producer'],
