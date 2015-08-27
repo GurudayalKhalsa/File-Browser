@@ -13,6 +13,7 @@ Only tested on Mac OS X.
 - Visit localhost:3000 to see the app
 
 To Run quickly, insert this into  ~/.bash_profile :
-- alias filebrowser="cd /path/to/File\ Browser/app && node server"
+
+    alias filebrowser="cd /path/to/File\ Browser/app && node server"
 
 To hack away on this project, cd the root directory, run gulp and start coding.
