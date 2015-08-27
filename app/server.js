@@ -26,4 +26,4 @@ for(var key in requests){
   server[request.type || 'post'](key, request.fn || function(){});
 }
 
-server.listen(process.argv[2] || 3000);
+server.listen(process.argv[2] || 4000);
